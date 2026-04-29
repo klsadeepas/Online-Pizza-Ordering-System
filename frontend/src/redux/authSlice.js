@@ -71,6 +71,20 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (userD
   }
 });
 
+export const toggleFavorite = createAsyncThunk('auth/toggleFavorite', async (pizzaId, thunkAPI) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`http://localhost:5000/api/users/favorites/${pizzaId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const user = JSON.parse(localStorage.getItem('user'));
+    localStorage.setItem('user', JSON.stringify({ ...user, favorites: response.data }));
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data.message);
+  }
+});
+
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null, // Load user from local storage
   token: localStorage.getItem('token') || null,
@@ -145,6 +159,11 @@ const authSlice = createSlice({
       // Update Profile
       .addCase(updateProfile.fulfilled, (state, action) => { // User object from backend already has isAdmin
         state.user = action.payload;
+      })
+      .addCase(toggleFavorite.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.favorites = action.payload;
+        }
       });
   }
 });
