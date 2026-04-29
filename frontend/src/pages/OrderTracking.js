@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint, FaReceipt } from 'react-icons/fa';
+import { getOrderById } from '../redux/orderSlice';
+import PizzaPrepAnimation from '../components/PizzaPrepAnimation';
 
 const OrderTracking = () => {
   const { id } = useParams();
-  const { user, isAuthenticated } = useSelector(state => state.auth);
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { currentOrder: order, isLoading: loading } = useSelector(state => state.orders);
+  const { isAuthenticated } = useSelector(state => state.auth);
   
   const statusSteps = [
-    { id: 'received', label: 'Order Received', icon: FaReceipt }, // Changed 'placed' to 'received' to match backend
+    { id: 'received', label: 'Order Received', icon: FaReceipt },
     { id: 'confirmed', label: 'Confirmed', icon: FaCheck },
     { id: 'preparing', label: 'Preparing', icon: FaClock },
     { id: 'outForDelivery', label: 'Out for Delivery', icon: FaMotorcycle },
@@ -20,30 +22,10 @@ const OrderTracking = () => {
   ];
   
   useEffect(() => {
-    fetchOrder();
-  }, [id]);
-  
-  const fetchOrder = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/orders/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setOrder(data);
-      } else {
-        toast.error('Order not found');
-      }
-    } catch (error) {
-      toast.error(error.message || 'Error fetching order');
-    } finally {
-      setLoading(false);
+    if (id) {
+      dispatch(getOrderById(id));
     }
-  };
+  }, [id, dispatch]);
   
   const getCurrentStepIndex = () => {
     if (!order) return 0;
@@ -51,6 +33,8 @@ const OrderTracking = () => {
       'received': 0, // Changed 'placed' to 'received'
       'confirmed': 1,
       'preparing': 2,
+      'baking': 2,
+      'qualityCheck': 2,
       'outForDelivery': 3,
       'delivered': 4,
       'cancelled': -1
@@ -149,6 +133,11 @@ const OrderTracking = () => {
             )}
           </div>
           
+          {/* Animated Preparation Visual */}
+          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <PizzaPrepAnimation status={order.status} />
+          )}
+
           {/* Progress Steps */}
           {order.status !== 'cancelled' && (
             <div className="relative">
