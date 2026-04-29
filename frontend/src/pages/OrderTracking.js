@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint, FaReceipt } from 'react-icons/fa';
 import { getOrderById } from '../redux/orderSlice';
 import PizzaPrepAnimation from '../components/PizzaPrepAnimation';
+import DeliveryMap from '../components/DeliveryMap';
 
 const OrderTracking = () => {
   const { id } = useParams();
@@ -143,6 +144,11 @@ const OrderTracking = () => {
             )}
           </div>
           
+          {/* Delivery Map Visualizer */}
+          {order.status !== 'cancelled' && (
+            <DeliveryMap status={order.status} />
+          )}
+
           {/* Animated Preparation Visual */}
           {order.status !== 'cancelled' && order.status !== 'delivered' && (
             <PizzaPrepAnimation status={order.status} />

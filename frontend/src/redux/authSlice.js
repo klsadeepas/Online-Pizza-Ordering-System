@@ -85,6 +85,20 @@ export const toggleFavorite = createAsyncThunk('auth/toggleFavorite', async (piz
   }
 });
 
+export const topUpWallet = createAsyncThunk('auth/topUpWallet', async (amount, thunkAPI) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.post(`${API_URL.replace('/auth/', '/users/wallet/topup')}`, { amount }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const user = JSON.parse(localStorage.getItem('user'));
+    localStorage.setItem('user', JSON.stringify({ ...user, walletBalance: response.data.balance }));
+    return response.data.balance;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data.message);
+  }
+});
+
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null, // Load user from local storage
   token: localStorage.getItem('token') || null,
@@ -163,6 +177,11 @@ const authSlice = createSlice({
       .addCase(toggleFavorite.fulfilled, (state, action) => {
         if (state.user) {
           state.user.favorites = action.payload;
+        }
+      })
+      .addCase(topUpWallet.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.walletBalance = action.payload;
         }
       });
   }

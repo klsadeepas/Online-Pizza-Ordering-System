@@ -93,6 +93,10 @@ const Checkout = () => {
   };
 
   const handleNext = () => {
+    if (step === 2 && formData.paymentMethod === 'wallet' && user.walletBalance < finalTotal) {
+      toast.error('Insufficient wallet balance. Please top up or choose another method.');
+      return;
+    }
     if (!validateStep(step)) {
       toast.error('Please fill in all required fields');
       return;
