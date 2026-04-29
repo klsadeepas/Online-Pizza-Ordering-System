@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhone, FaCreditCard, FaMoneyBillWave, FaWallet, FaCheck, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import { createOrder } from '../redux/orderSlice';
+import { createOrder } from '../redux/orderSlice'; // Correct import
 import { clearCartItems } from '../redux/cartSlice';
 
 const Checkout = () => {
@@ -12,7 +12,7 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const { items, totalAmount } = useSelector(state => state.cart);
   const { user, isAuthenticated } = useSelector(state => state.auth);
-  
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Delivery Info
@@ -32,13 +32,13 @@ const Checkout = () => {
     cardName: '',
     upiId: ''
   });
-  
+
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  
+
   const tax = totalAmount * 0.08;
   const deliveryFee = totalAmount > 500 ? 0 : 50;
-  const discount = appliedCoupon ? (totalAmount * appliedCoupon.discount / 100) : 0;
+  const discount = appliedCoupon ? (totalAmount * (appliedCoupon.discount / 100)) : 0; // Ensure discount is calculated correctly
   const finalTotal = totalAmount + tax + deliveryFee - discount;
   
   useEffect(() => {
@@ -49,11 +49,11 @@ const Checkout = () => {
       navigate('/menu');
     }
   }, [isAuthenticated, items.length, navigate]);
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
+
   const handleApplyCoupon = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/coupons/validate', {
@@ -61,7 +61,7 @@ const Checkout = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode, orderAmount: totalAmount })
       });
-      
+
       const data = await response.json();
       
       if (response.ok) {
@@ -74,7 +74,7 @@ const Checkout = () => {
       toast.error('Error applying coupon');
     }
   };
-  
+
   const validateStep = (stepNum) => {
     if (stepNum === 1) {
       return formData.name && formData.email && formData.phone && 
@@ -91,7 +91,7 @@ const Checkout = () => {
     }
     return true;
   };
-  
+
   const handleNext = () => {
     if (!validateStep(step)) {
       toast.error('Please fill in all required fields');
@@ -99,11 +99,11 @@ const Checkout = () => {
     }
     setStep(step + 1);
   };
-  
+
   const handleBack = () => {
     setStep(step - 1);
   };
-  
+
   const handleSubmit = async () => {
     try {
       const orderData = {
@@ -134,9 +134,9 @@ const Checkout = () => {
         discount,
         total: finalTotal
       };
-      
+
       const result = await dispatch(createOrder(orderData)).unwrap();
-      
+
       dispatch(clearCartItems());
       toast.success('Order placed successfully!');
       navigate(`/order-tracking/${result._id}`);
@@ -144,7 +144,7 @@ const Checkout = () => {
       toast.error(error.message || 'Error placing order');
     }
   };
-  
+
   return (
     <div className="pt-24 pb-16 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

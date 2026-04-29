@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint } from 'react-icons/fa';
 import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint, FaReceipt } from 'react-icons/fa';
 
 const OrderTracking = () => {
@@ -13,7 +12,6 @@ const OrderTracking = () => {
   const [loading, setLoading] = useState(true);
   
   const statusSteps = [
-    { id: 'placed', label: 'Order Placed', icon: FaPizzaSlice },
     { id: 'received', label: 'Order Received', icon: FaReceipt }, // Changed 'placed' to 'received' to match backend
     { id: 'confirmed', label: 'Confirmed', icon: FaCheck },
     { id: 'preparing', label: 'Preparing', icon: FaClock },
@@ -41,7 +39,6 @@ const OrderTracking = () => {
         toast.error('Order not found');
       }
     } catch (error) {
-      toast.error('Error fetching order');
       toast.error(error.message || 'Error fetching order');
     } finally {
       setLoading(false);
@@ -51,7 +48,6 @@ const OrderTracking = () => {
   const getCurrentStepIndex = () => {
     if (!order) return 0;
     const statusMap = {
-      'placed': 0,
       'received': 0, // Changed 'placed' to 'received'
       'confirmed': 1,
       'preparing': 2,
@@ -64,10 +60,6 @@ const OrderTracking = () => {
   
   const getEstimatedTime = () => {
     if (!order) return '';
-    const orderTime = new Date(order.createdAt);
-    const estimatedMinutes = order.estimatedDelivery || 45;
-    const estimatedTime = new Date(orderTime.getTime() + estimatedMinutes * 60000);
-    return estimatedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     // The estimatedDelivery is already a Date object from the backend
     return new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };

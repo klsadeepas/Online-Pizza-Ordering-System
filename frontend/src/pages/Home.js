@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowRight, FaStar, FaClock, FaFire, FaPizzaSlice, FaLeaf, FaCheese, FaMotorcycle } from 'react-icons/fa';
 import { getPizzas } from '../redux/pizzaSlice';
 
@@ -9,7 +9,7 @@ const Home = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pizzas, isLoading } = useSelector(state => state.pizzas);
-  const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [countdown, setCountdown] = useState({ hours: '00', minutes: '00', seconds: '00' });
   
   useEffect(() => {
     dispatch(getPizzas({}));
@@ -27,7 +27,7 @@ const Home = () => {
       const minutes = Math.floor((diff / (1000 * 60)) % 60);
       const seconds = Math.floor((diff / 1000) % 60);
       
-      setCountdown({ hours, minutes, seconds });
+      setCountdown({ hours: String(hours).padStart(2, '0'), minutes: String(minutes).padStart(2, '0'), seconds: String(seconds).padStart(2, '0') });
     }, 1000);
     
     return () => clearInterval(timer);
@@ -173,15 +173,15 @@ const Home = () => {
               <span className="text-gray-400">Ends in:</span>
               <div className="flex space-x-2">
                 <div className="bg-gray-800 rounded-lg p-3 text-center min-w-[60px]">
-                  <div className="text-2xl font-bold text-white">{String(countdown.hours).padStart(2, '0')}</div>
+                  <div className="text-2xl font-bold text-white">{countdown.hours}</div>
                   <div className="text-xs text-gray-400">Hours</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3 text-center min-w-[60px]">
-                  <div className="text-2xl font-bold text-white">{String(countdown.minutes).padStart(2, '0')}</div>
+                  <div className="text-2xl font-bold text-white">{countdown.minutes}</div>
                   <div className="text-xs text-gray-400">Min</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-3 text-center min-w-[60px]">
-                  <div className="text-2xl font-bold text-white">{String(countdown.seconds).padStart(2, '0')}</div>
+                  <div className="text-2xl font-bold text-white">{countdown.seconds}</div>
                   <div className="text-xs text-gray-400">Sec</div>
                 </div>
               </div>
