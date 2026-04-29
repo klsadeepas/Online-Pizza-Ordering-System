@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaStar, FaClock, FaFire, FaShoppingCart, FaHeart, FaMinus, FaPlus, FaCheck } from 'react-icons/fa';
@@ -12,7 +11,6 @@ const PizzaDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { pizza, isLoading } = useSelector(state => state.pizzas);
   const { pizza, isLoading, error } = useSelector(state => state.pizzas);
   const { user, isAuthenticated } = useSelector(state => state.auth);
   
@@ -24,7 +22,6 @@ const PizzaDetails = () => {
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   
   useEffect(() => {
-    dispatch(getPizzaById(id));
     dispatch(getPizzaById(id)).unwrap().catch((err) => {
       toast.error(err || 'Failed to load pizza details.');
       navigate('/menu'); // Redirect if pizza not found or error

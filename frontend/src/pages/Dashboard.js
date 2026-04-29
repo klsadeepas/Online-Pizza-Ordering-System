@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaHistory, FaHeart, FaCog, FaSignOutAlt, FaPizzaSlice, FaClock, FaCheck, FaMotorcycle, FaStar } from 'react-icons/fa';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaHistory, FaHeart, FaCog, FaSignOutAlt, FaPizzaSlice, FaClock, FaCheck, FaMotorcycle, FaStar, FaReceipt } from 'react-icons/fa';
 import { logout, updateProfile } from '../redux/authSlice';
 import { getOrders } from '../redux/orderSlice';
@@ -17,10 +16,6 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || ''
     id: user?.id, // Add user ID for updateProfile thunk
     name: user?.name,
     email: user?.email,
@@ -215,7 +210,6 @@ const Dashboard = () => {
                             <span className="ml-2 text-sm">
                               {order.status === 'delivered' 
                                 ? `Delivered on ${new Date(order.deliveredAt).toLocaleDateString()}`
-                                : order.estimatedDelivery 
                                 : order.estimatedDelivery // This is a Date object, not minutes
                                   ? `Estimated: ${order.estimatedDelivery} min`
                                   : 'Processing'
