@@ -15,9 +15,10 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { FaUser, FaPizzaSlice, FaShoppingCart, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaCog, FaSignOutAlt, FaBars, FaTimes as FaClose, FaUsers } from 'react-icons/fa';
+import { FaUser, FaPizzaSlice, FaShoppingCart, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaCog, FaSignOutAlt, FaBars, FaTimes as FaClose, FaUsers, FaTag } from 'react-icons/fa';
 import { getPizzas, addPizza, updatePizza, deletePizza } from '../redux/pizzaSlice';
 import { getOrders, updateOrderStatus } from '../redux/orderSlice';
+import { logout } from '../redux/authSlice';
 
 ChartJS.register(
   CategoryScale,
@@ -37,17 +38,19 @@ const AdminDashboard = () => {
   const { pizzas } = useSelector(state => state.pizzas);
   const { orders } = useSelector(state => state.orders);
   const [usersList, setUsersList] = useState([]);
+  const [couponsList, setCouponsList] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPizzaModal, setShowPizzaModal] = useState(false);
+  const [showCouponModal, setShowCouponModal] = useState(false);
   const [editingPizza, setEditingPizza] = useState(null);
   const [pizzaForm, setPizzaForm] = useState({
     name: '',
     description: '',
     price: 0,
-    category: 'vegetarian',
+    category: 'Veg Pizza',
     image: '',
     sizes: { small: 0, medium: 50, large: 100 },
     crusts: { thin: 0, cheeseBurst: 50, stuffed: 30, pan: 20 },
@@ -59,6 +62,14 @@ const AdminDashboard = () => {
     isPopular: false,
     discount: 0
   });
+
+  const [couponForm, setCouponForm] = useState({
+    code: '',
+    discount: 0,
+    minOrderAmount: 0,
+    validUntil: '',
+    isActive: true
+  });
   
   useEffect(() => {
     if (!isAuthenticated || !user?.isAdmin) {
@@ -67,6 +78,7 @@ const AdminDashboard = () => {
       dispatch(getPizzas());
       dispatch(getOrders());
       fetchUsers();
+      fetchCoupons();
       fetchAnalytics();
     }
   }, [isAuthenticated, user, navigate, dispatch]);
@@ -92,6 +104,14 @@ const AdminDashboard = () => {
       setUsersList(data);
     } catch (err) { console.error(err); }
   };
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/coupons');
+      const data = await res.json();
+      setCouponsList(data);
+    } catch (err) { console.error(err); }
+  };
   
   const handleLogout = () => {
     dispatch(logout()); // Use Redux logout action
@@ -102,18 +122,19 @@ const AdminDashboard = () => {
   
   const handlePizzaSubmit = async (e) => {
     e.preventDefault();
+    const dataToSubmit = { ...pizzaForm, images: [pizzaForm.image] };
     try {
       if (editingPizza) {
-        await dispatch(updatePizza({ id: editingPizza._id, pizzaData: pizzaForm })).unwrap();
+        await dispatch(updatePizza({ id: editingPizza._id, pizzaData: dataToSubmit })).unwrap();
         toast.success('Pizza updated successfully');
       } else {
-        await dispatch(addPizza(pizzaForm)).unwrap();
+        await dispatch(addPizza(dataToSubmit)).unwrap();
         toast.success('Pizza added successfully');
       }
       setShowPizzaModal(false);
       setEditingPizza(null);
       setPizzaForm({
-        name: '', description: '', price: 0, category: 'vegetarian', image: '',
+        name: '', description: '', price: 0, category: 'Veg Pizza', image: '',
         sizes: { small: 0, medium: 50, large: 100 },
         crusts: { thin: 0, cheeseBurst: 50, stuffed: 30, pan: 20 },
         extraToppings: { extraCheese: 30, mushrooms: 25, chicken: 40, sausage: 35, pepperoni: 35, olives: 20, onions: 15 },
@@ -122,6 +143,26 @@ const AdminDashboard = () => {
     } catch (error) {
       toast.error('Error saving pizza');
     }
+  };
+
+  const handleCouponSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/coupons', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(couponForm)
+      });
+      if (res.ok) {
+        toast.success('Coupon created');
+        fetchCoupons();
+        setShowCouponModal(false);
+      }
+    } catch (err) { toast.error('Error creating coupon'); }
   };
   
   const handleDeletePizza = async (id) => {
@@ -154,7 +195,8 @@ const AdminDashboard = () => {
     { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
     { id: 'orders', label: 'Orders', icon: FaShoppingCart }, // Changed icon to FaShoppingCart for consistency
     { id: 'pizzas', label: 'Pizzas', icon: FaPizzaSlice },
-    { id: 'users', label: 'Users', icon: FaUsers } // Changed icon to FaUsers
+    { id: 'users', label: 'Users', icon: FaUsers },
+    { id: 'coupons', label: 'Coupons', icon: FaTag }
   ];
   
   if (!isAuthenticated || !user?.isAdmin) {
@@ -486,6 +528,37 @@ const AdminDashboard = () => {
               </div>
             </motion.div>
           )}
+
+          {/* Coupons Tab */}
+          {activeTab === 'coupons' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold text-white">Coupon Management</h2>
+                <button onClick={() => setShowCouponModal(true)} className="btn-primary">
+                  <FaPlus className="mr-2" /> Create Coupon
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {couponsList.map(coupon => (
+                  <div key={coupon._id} className="card border-l-4 border-primary">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-2xl font-black text-white">{coupon.code}</h3>
+                        <p className="text-primary font-bold">{coupon.discount}% OFF</p>
+                      </div>
+                      <span className={`badge ${coupon.isActive ? 'badge-success' : 'badge-error'}`}>
+                        {coupon.isActive ? 'Active' : 'Expired'}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-400">
+                      <p>Min Order: ${coupon.minOrderAmount}</p>
+                      <p>Expires: {new Date(coupon.validUntil).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
       
@@ -521,9 +594,12 @@ const AdminDashboard = () => {
                     onChange={(e) => setPizzaForm({ ...pizzaForm, category: e.target.value })}
                     className="input"
                   >
-                    <option value="vegetarian">Vegetarian</option>
-                    <option value="non-vegetarian">Non-Vegetarian</option>
-                    <option value="special">Special</option>
+                    <option value="Veg Pizza">Veg Pizza</option>
+                    <option value="Chicken Pizza">Chicken Pizza</option>
+                    <option value="Cheese Burst">Cheese Burst</option>
+                    <option value="Seafood Pizza">Seafood Pizza</option>
+                    <option value="BBQ Pizza">BBQ Pizza</option>
+                    <option value="Supreme Pizza">Supreme Pizza</option>
                   </select>
                 </div>
               </div>
@@ -608,6 +684,54 @@ const AdminDashboard = () => {
                 <button type="submit" className="btn-primary">
                   {editingPizza ? 'Update Pizza' : 'Add Pizza'}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Coupon Modal */}
+      {showCouponModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md">
+            <h2 className="text-2xl font-bold text-white mb-6">Create New Coupon</h2>
+            <form onSubmit={handleCouponSubmit} className="space-y-4">
+              <div>
+                <label className="text-gray-400 text-sm mb-2 block">Promo Code</label>
+                <input
+                  type="text"
+                  value={couponForm.code}
+                  onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
+                  className="input uppercase"
+                  placeholder="E.G. SUMMER50"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-gray-400 text-sm mb-2 block">Discount %</label>
+                  <input
+                    type="number"
+                    value={couponForm.discount}
+                    onChange={(e) => setCouponForm({ ...couponForm, discount: parseInt(e.target.value) })}
+                    className="input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-gray-400 text-sm mb-2 block">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={couponForm.validUntil}
+                    onChange={(e) => setCouponForm({ ...couponForm, validUntil: e.target.value })}
+                    className="input"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-4">
+                <button type="button" onClick={() => setShowCouponModal(false)} className="btn-secondary">Cancel</button>
+                <button type="submit" className="btn-primary">Create Coupon</button>
               </div>
             </form>
           </div>

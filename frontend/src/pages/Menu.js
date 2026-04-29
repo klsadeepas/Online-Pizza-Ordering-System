@@ -164,6 +164,22 @@ const Menu = () => {
                     ))}
                   </select>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">Min Price ($)</label>
+                    <input 
+                      type="number" value={filters.minPrice} onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                      className="input" placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">Max Price ($)</label>
+                    <input 
+                      type="number" value={filters.maxPrice} onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                      className="input" placeholder="1000"
+                    />
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}

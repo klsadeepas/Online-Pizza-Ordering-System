@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowRight, FaStar, FaClock, FaFire, FaPizzaSlice, FaLeaf, FaCheese, FaMotorcycle } from 'react-icons/fa';
+import { FaArrowRight, FaStar, FaClock, FaFire, FaPizzaSlice, FaLeaf, FaCheese, FaMotorcycle, FaRobot } from 'react-icons/fa';
 import { getPizzas } from '../redux/pizzaSlice';
 
 const Home = () => {
@@ -35,6 +35,7 @@ const Home = () => {
   
   const popularPizzas = pizzas.filter(p => p.isPopular).slice(0, 6);
   const featuredPizzas = pizzas.filter(p => p.isFeatured).slice(0, 4);
+  const recommendedPizzas = [...pizzas].sort((a, b) => b.rating - a.rating).slice(0, 3);
   
   const categories = [
     { name: 'Veg Pizza', icon: <FaLeaf />, color: 'text-green-400' },
@@ -189,6 +190,59 @@ const Home = () => {
                 Order Now
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Recommendation Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -z-10 opacity-10">
+          <FaRobot className="text-[400px] text-primary rotate-12" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="mb-12"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-primary/20 rounded-lg text-primary">
+                <FaRobot />
+              </div>
+              <span className="text-primary font-bold uppercase tracking-widest text-sm">Smart Engine</span>
+            </div>
+            <h2 className="text-4xl font-bold text-white">Recommended <span className="gradient-text">For You</span></h2>
+            <p className="text-gray-400 mt-2">Based on your taste profile and top-rated favorites</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {recommendedPizzas.map((pizza, index) => (
+              <motion.div
+                key={`rec-${pizza._id}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                className="glass p-6 rounded-3xl relative group"
+              >
+                <div className="flex gap-4 items-center">
+                  <img 
+                    src={pizza.images[0]} 
+                    className="w-24 h-24 rounded-2xl object-cover ring-2 ring-primary/20" 
+                    alt={pizza.name} 
+                  />
+                  <div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{pizza.name}</h3>
+                    <div className="flex items-center text-yellow-400 text-sm mt-1">
+                      <FaStar className="mr-1" /> {pizza.rating} <span className="text-gray-500 ml-2">({pizza.reviewCount})</span>
+                    </div>
+                    <Link to={`/pizza/${pizza._id}`} className="mt-3 inline-block text-sm text-primary font-bold hover:underline">
+                      Try Now →
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
