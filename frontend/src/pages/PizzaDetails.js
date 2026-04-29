@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaStar, FaClock, FaFire, FaShoppingCart, FaHeart, FaMinus, FaPlus, FaCheck } from 'react-icons/fa';
 import { getPizzaById } from '../redux/pizzaSlice';
@@ -12,6 +13,7 @@ const PizzaDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { pizza, isLoading } = useSelector(state => state.pizzas);
+  const { pizza, isLoading, error } = useSelector(state => state.pizzas);
   const { user, isAuthenticated } = useSelector(state => state.auth);
   
   const [selectedSize, setSelectedSize] = useState('medium');
@@ -23,6 +25,10 @@ const PizzaDetails = () => {
   
   useEffect(() => {
     dispatch(getPizzaById(id));
+    dispatch(getPizzaById(id)).unwrap().catch((err) => {
+      toast.error(err || 'Failed to load pizza details.');
+      navigate('/menu'); // Redirect if pizza not found or error
+    });
     fetchReviews();
   }, [dispatch, id]);
   
@@ -151,6 +157,15 @@ const PizzaDetails = () => {
     );
   }
   
+  if (error) {
+    return (
+      <div className="pt-24 min-h-screen flex items-center justify-center">
+        <p className="text-red-500 text-xl">{error}</p>
+        <button onClick={() => navigate('/menu')} className="btn-primary ml-4">Go to Menu</button>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

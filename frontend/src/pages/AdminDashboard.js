@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { FaUser, FaPizzaSlice, FaShoppingCart, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaCog, FaSignOutAlt, FaBars, FaTimes as FaClose } from 'react-icons/fa';
+import { FaUser, FaPizzaSlice, FaShoppingCart, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaCog, FaSignOutAlt, FaBars, FaTimes as FaClose, FaUsers } from 'react-icons/fa';
 import { getPizzas, addPizza, updatePizza, deletePizza } from '../redux/pizzaSlice';
 import { getOrders, updateOrderStatus } from '../redux/orderSlice';
 
@@ -13,12 +13,12 @@ const AdminDashboard = () => {
   const { user, isAuthenticated } = useSelector(state => state.auth);
   const { pizzas } = useSelector(state => state.pizzas);
   const { orders } = useSelector(state => state.orders);
+  const [usersList, setUsersList] = useState([]);
   
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPizzaModal, setShowPizzaModal] = useState(false);
   const [editingPizza, setEditingPizza] = useState(null);
-  const [usersList, setUsersList] = useState([]);
   const [pizzaForm, setPizzaForm] = useState({
     name: '',
     description: '',
@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!isAuthenticated || !user?.isAdmin) {
       navigate('/login');
-    } else {
+    } else if (user?.isAdmin) { // Only fetch admin data if user is admin
       dispatch(getPizzas());
       dispatch(getOrders());
       fetchUsers();
@@ -58,9 +58,9 @@ const AdminDashboard = () => {
   };
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/');
+    dispatch(logout()); // Use Redux logout action
+    navigate('/login'); // Redirect to login after logout
+
     toast.success('Logged out successfully');
   };
   
@@ -116,9 +116,9 @@ const AdminDashboard = () => {
   
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
-    { id: 'orders', label: 'Orders', icon: FaShoppingCart },
+    { id: 'orders', label: 'Orders', icon: FaShoppingCart }, // Changed icon to FaShoppingCart for consistency
     { id: 'pizzas', label: 'Pizzas', icon: FaPizzaSlice },
-    { id: 'users', label: 'Users', icon: FaUser }
+    { id: 'users', label: 'Users', icon: FaUsers } // Changed icon to FaUsers
   ];
   
   if (!isAuthenticated || !user?.isAdmin) {
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
         {/* Sidebar */}
         <div className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-800 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform`}>
           <div className="p-6 border-b border-gray-700">
-            <Link to="/" className="flex items-center">
+            <Link to="/admin/dashboard" className="flex items-center">
               <FaPizzaSlice className="text-3xl text-primary mr-2" />
               <span className="text-2xl font-bold text-white">PizzaExpress</span>
             </Link>
@@ -397,7 +397,7 @@ const AdminDashboard = () => {
                           <td className="py-3 text-gray-400">{new Date(u.createdAt).toLocaleDateString()}</td>
                           <td className="py-3">
                             <button 
-                              onClick={async () => {
+                              onClick={async () => { // This should ideally be a Redux thunk for consistency
                                 if(window.confirm('Delete user?')) {
                                   await fetch(`http://localhost:5000/api/users/${u._id}`, { 
                                     method: 'DELETE',
