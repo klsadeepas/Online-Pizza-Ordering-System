@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #e11d28;
+  --secondary: #f97316;
+  --dark: #0f0f0f;
+  --darker: #0a0a0a;
+  --light: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--dark);
+  color: var(--light);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-primary hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/30;
+}
+
+.btn-secondary {
+  @apply bg-secondary hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-orange-500/30;
+}
+
+.btn-outline {
+  @apply border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold py-3 px-6 rounded-full transition-all duration-300;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-gray-900 rounded-2xl p-6 border border-gray-800 hover:border-primary transition-all duration-300;
+}
+
+.card-glass {
+  @apply glass rounded-2xl p-6;
+}
+
+/* Input Styles */
+.input {
+  @apply w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary transition-colors;
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply bg-gray-800 rounded animate-pulse;
+}
+
+/* Pizza Card Hover Effect */
+.pizza-card {
+  @apply transition-all duration-300;
+}
+
+.pizza-card:hover {
+  @apply transform -translate-y-2;
+  box-shadow: 0 20px 40px rgba(225, 29, 72, 0.2);
+}
+
+/* Order Status Colors */
+.status-received { @apply text-blue-400; }
+.status-preparing { @apply text-yellow-400; }
+.status-baking { @apply text-orange-400; }
+.status-qualityCheck { @apply text-purple-400; }
+.status-outForDelivery { @apply text-green-400; }
+.status-delivered { @apply text-green-500; }
+.status-cancelled { @apply text-red-500; }
+
+/* Animations */
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti {
+  animation: confetti 3s ease-out forwards;
+}
+
+/* Page Transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease-out;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+
+/* Rating Stars */
+.star-filled { @apply text-yellow-400; }
+.star-empty { @apply text-gray-600; }
+
+/* Toast Customization */
+.toast-custom {
+  background: linear-gradient(135deg, #1f2937, #111827) !important;
+  color: white !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(225, 29, 72, 0.3) !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hero-text {
+    font-size: 2rem !important;
+  }
+  
+  .card {
+    @apply p-4;
+  }
+}
+
+/* Dark Mode Enhancements */
+.dark .card {
+  @apply bg-gray-900 border-gray-800;
+}
+
+.dark .input {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Selection */
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* Focus Ring */
+.focus-ring:focus {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-gray-900;
+}
+
+/* Custom Checkbox */
+.checkbox-custom {
+  @apply w-5 h-5 rounded border-2 border-gray-600 checked:bg-primary checked:border-primary transition-colors;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+}
+
+.badge-primary {
+  @apply bg-primary/20 text-primary;
+}
+
+.badge-success {
+  @apply bg-green-500/20 text-green-400;
+}
+
+.badge-warning {
+  @apply bg-yellow-500/20 text-yellow-400;
+}
+
+.badge-error {
+  @apply bg-red-500/20 text-red-400;
+}
