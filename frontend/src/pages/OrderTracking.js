@@ -22,10 +22,20 @@ const OrderTracking = () => {
   ];
   
   useEffect(() => {
+    let interval;
     if (id) {
       dispatch(getOrderById(id));
+      
+      // Simulate real-time by polling every 10 seconds
+      interval = setInterval(() => {
+        if (order && order.status !== 'delivered' && order.status !== 'cancelled') {
+          dispatch(getOrderById(id));
+        }
+      }, 10000);
     }
-  }, [id, dispatch]);
+    
+    return () => clearInterval(interval);
+  }, [id, dispatch, order?.status]);
   
   const getCurrentStepIndex = () => {
     if (!order) return 0;

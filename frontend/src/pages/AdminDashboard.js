@@ -3,9 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import { FaUser, FaPizzaSlice, FaShoppingCart, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaCheck, FaTimes, FaCog, FaSignOutAlt, FaBars, FaTimes as FaClose, FaUsers } from 'react-icons/fa';
 import { getPizzas, addPizza, updatePizza, deletePizza } from '../redux/pizzaSlice';
 import { getOrders, updateOrderStatus } from '../redux/orderSlice';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +37,7 @@ const AdminDashboard = () => {
   const { pizzas } = useSelector(state => state.pizzas);
   const { orders } = useSelector(state => state.orders);
   const [usersList, setUsersList] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -43,8 +67,20 @@ const AdminDashboard = () => {
       dispatch(getPizzas());
       dispatch(getOrders());
       fetchUsers();
+      fetchAnalytics();
     }
   }, [isAuthenticated, user, navigate, dispatch]);
+
+  const fetchAnalytics = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/analytics', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setAnalytics(data);
+    } catch (err) { console.error(err); }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -220,6 +256,37 @@ const AdminDashboard = () => {
                 </div>
               </div>
               
+              {/* Analytics Chart */}
+              {analytics && (
+                <div className="card mb-8">
+                  <h3 className="text-xl font-bold text-white mb-6">Revenue Trend (Last 7 Days)</h3>
+                  <div className="h-[300px]">
+                    <Line 
+                      data={{
+                        labels: analytics.dailyRevenue.map(d => d.date),
+                        datasets: [{
+                          label: 'Revenue ($)',
+                          data: analytics.dailyRevenue.map(d => d.revenue),
+                          borderColor: '#e11d28',
+                          backgroundColor: 'rgba(225, 29, 40, 0.1)',
+                          fill: true,
+                          tension: 0.4
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                          y: { grid: { color: '#374151' }, ticks: { color: '#9ca3af' } },
+                          x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                        },
+                        plugins: { legend: { display: false } }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Recent Orders */}
               <div className="card">
                 <h3 className="text-xl font-bold text-white mb-4">Recent Orders</h3>

@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { FaStar, FaClock, FaFire, FaShoppingCart, FaHeart, FaMinus, FaPlus, FaCheck } from 'react-icons/fa';
 import { getPizzaById } from '../redux/pizzaSlice';
 import { addToCart } from '../redux/cartSlice';
+import { toggleFavorite } from '../redux/authSlice';
 
 const PizzaDetails = () => {
   const { id } = useParams();
@@ -113,6 +114,14 @@ const PizzaDetails = () => {
     toast.success(`${pizza.name} added to cart!`);
   };
   
+  const handleToggleFavorite = () => {
+    if (!isAuthenticated) {
+      toast.info('Please login to save favorites');
+      return;
+    }
+    dispatch(toggleFavorite(pizza._id));
+  };
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -188,6 +197,12 @@ const PizzaDetails = () => {
                   Popular
                 </div>
               )}
+              <button 
+                onClick={handleToggleFavorite}
+                className="absolute bottom-4 right-4 p-3 bg-gray-900/80 hover:bg-gray-900 rounded-full text-2xl transition-all"
+              >
+                <FaHeart className={user?.favorites?.includes(pizza._id) ? 'text-primary' : 'text-gray-400'} />
+              </button>
             </div>
           </motion.div>
           
