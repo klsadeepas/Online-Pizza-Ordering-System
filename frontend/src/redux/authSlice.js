@@ -9,6 +9,7 @@ export const register = createAsyncThunk('auth/register', async (userData, thunk
     const response = await axios.post(API_URL + 'register', userData);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user)); // Store user data
     }
     return response.data;
   } catch (error) {
@@ -22,6 +23,7 @@ export const login = createAsyncThunk('auth/login', async (userData, thunkAPI) =
     const response = await axios.post(API_URL + 'login', userData);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user)); // Store user data
     }
     return response.data;
   } catch (error) {
@@ -36,6 +38,7 @@ export const getCurrentUser = createAsyncThunk('auth/getCurrentUser', async (_, 
     if (!token) return thunkAPI.rejectWithValue('No token found');
     
     const response = await axios.get(API_URL + 'me', {
+      // No need to set user in local storage here, as it's already done on login/register
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -48,6 +51,7 @@ export const getCurrentUser = createAsyncThunk('auth/getCurrentUser', async (_, 
 // Logout
 export const logout = createAsyncThunk('auth/logout', async () => {
   localStorage.removeItem('token');
+  localStorage.removeItem('user'); // Clear user data on logout
   return null;
 });
 
@@ -56,7 +60,10 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (userD
   try {
     const token = localStorage.getItem('token');
     const response = await axios.put(`http://localhost:5000/api/users/${userData.id}`, userData, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.data) {
+      localStorage.setItem('user', JSON.stringify(response.data)); // Update user in local storage
     });
     return response.data;
   } catch (error) {
@@ -65,7 +72,7 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (userD
 });
 
 const initialState = {
-  user: null,
+  user: JSON.parse(localStorage.getItem('user')) || null, // Load user from local storage
   token: localStorage.getItem('token') || null,
   isAuthenticated: false,
   isLoading: false,
@@ -90,12 +97,13 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        state.user = { ...action.payload.user, isAdmin: action.payload.user.role === 'admin' }; // Ensure isAdmin is set
         state.token = action.payload.token;
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+        state.isAuthenticated = false; // Set isAuthenticated to false on rejection
       })
       // Login
       .addCase(login.pending, (state) => {
@@ -105,12 +113,13 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        state.user = { ...action.payload.user, isAdmin: action.payload.user.role === 'admin' }; // Ensure isAdmin is set
         state.token = action.payload.token;
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+        state.isAuthenticated = false; // Set isAuthenticated to false on rejection
       })
       // Get Current User
       .addCase(getCurrentUser.pending, (state) => {
@@ -119,7 +128,7 @@ const authSlice = createSlice({
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload;
+        state.user = { ...action.payload, isAdmin: action.payload.role === 'admin' }; // Ensure isAdmin is set
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -134,7 +143,7 @@ const authSlice = createSlice({
         state.token = null;
       })
       // Update Profile
-      .addCase(updateProfile.fulfilled, (state, action) => {
+      .addCase(updateProfile.fulfilled, (state, action) => { // User object from backend already has isAdmin
         state.user = action.payload;
       });
   }

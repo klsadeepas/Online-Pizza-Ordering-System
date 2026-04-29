@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint } from 'react-icons/fa';
+import { FaCheck, FaClock, FaMotorcycle, FaPizzaSlice, FaHome, FaPhone, FaArrowLeft, FaPrint, FaReceipt } from 'react-icons/fa';
 
 const OrderTracking = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const OrderTracking = () => {
   
   const statusSteps = [
     { id: 'placed', label: 'Order Placed', icon: FaPizzaSlice },
+    { id: 'received', label: 'Order Received', icon: FaReceipt }, // Changed 'placed' to 'received' to match backend
     { id: 'confirmed', label: 'Confirmed', icon: FaCheck },
     { id: 'preparing', label: 'Preparing', icon: FaClock },
     { id: 'outForDelivery', label: 'Out for Delivery', icon: FaMotorcycle },
@@ -40,6 +42,7 @@ const OrderTracking = () => {
       }
     } catch (error) {
       toast.error('Error fetching order');
+      toast.error(error.message || 'Error fetching order');
     } finally {
       setLoading(false);
     }
@@ -49,6 +52,7 @@ const OrderTracking = () => {
     if (!order) return 0;
     const statusMap = {
       'placed': 0,
+      'received': 0, // Changed 'placed' to 'received'
       'confirmed': 1,
       'preparing': 2,
       'outForDelivery': 3,
@@ -64,6 +68,8 @@ const OrderTracking = () => {
     const estimatedMinutes = order.estimatedDelivery || 45;
     const estimatedTime = new Date(orderTime.getTime() + estimatedMinutes * 60000);
     return estimatedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // The estimatedDelivery is already a Date object from the backend
+    return new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
   const handlePrint = () => {

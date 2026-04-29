@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaHistory, FaHeart, FaCog, FaSignOutAlt, FaPizzaSlice, FaClock, FaCheck, FaMotorcycle, FaStar } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaHistory, FaHeart, FaCog, FaSignOutAlt, FaPizzaSlice, FaClock, FaCheck, FaMotorcycle, FaStar, FaReceipt } from 'react-icons/fa';
 import { logout, updateProfile } from '../redux/authSlice';
 import { getOrders } from '../redux/orderSlice';
 
@@ -20,6 +21,11 @@ const Dashboard = () => {
     email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || ''
+    id: user?.id, // Add user ID for updateProfile thunk
+    name: user?.name,
+    email: user?.email,
+    phone: user?.phone,
+    address: user?.address
   });
   
   useEffect(() => {
@@ -30,6 +36,12 @@ const Dashboard = () => {
     }
   }, [isAuthenticated, navigate, dispatch]);
   
+  // Update profileData when user object changes (e.g., after login or profile update)
+  useEffect(() => {
+    setProfileData(prev => ({ ...prev, id: user?.id, name: user?.name, email: user?.email, phone: user?.phone, address: user?.address }));
+  }, [user]);
+
+
   const handleLogout = () => {
     dispatch(logout());
     navigate('/');
@@ -51,6 +63,7 @@ const Dashboard = () => {
     switch (status) {
       case 'delivered': return <FaCheck className="text-green-500" />;
       case 'outForDelivery': return <FaMotorcycle className="text-blue-500" />;
+      case 'received': return <FaReceipt className="text-gray-500" />; // Added for 'received' status
       case 'preparing': return <FaPizzaSlice className="text-yellow-500" />;
       default: return <FaClock className="text-gray-500" />;
     }
@@ -61,6 +74,7 @@ const Dashboard = () => {
       case 'delivered': return 'badge-success';
       case 'outForDelivery': return 'badge-info';
       case 'preparing': return 'badge-warning';
+      case 'received': return 'badge-secondary'; // Added for 'received' status
       case 'confirmed': return 'badge-primary';
       default: return 'badge-secondary';
     }
@@ -202,6 +216,7 @@ const Dashboard = () => {
                               {order.status === 'delivered' 
                                 ? `Delivered on ${new Date(order.deliveredAt).toLocaleDateString()}`
                                 : order.estimatedDelivery 
+                                : order.estimatedDelivery // This is a Date object, not minutes
                                   ? `Estimated: ${order.estimatedDelivery} min`
                                   : 'Processing'
                               }
