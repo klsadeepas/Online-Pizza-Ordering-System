@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
 import { motion, AnimatePresence } from 'framer-motion'; // Keep AnimatePresence
 import { FaSearch, FaFilter, FaStar, FaClock, FaFire, FaThLarge, FaList } from 'react-icons/fa';
 import { getPizzas, setFilters } from '../redux/pizzaSlice';
@@ -12,7 +11,6 @@ const Menu = () => {
   const { pizzas, isLoading, filters } = useSelector(state => state.pizzas);
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
-  
 
   const categories = ['All', 'Veg Pizza', 'Chicken Pizza', 'Cheese Burst', 'Seafood Pizza', 'BBQ Pizza', 'Supreme Pizza'];
   const sortOptions = [
@@ -21,11 +19,9 @@ const Menu = () => {
     { value: 'price-low', label: 'Price: Low to High' },
     { value: 'price-high', label: 'Price: High to Low' }
   ];
-  
 
   useEffect(() => {
     const category = searchParams.get('category') || 'All';
-    const search = searchParams.get('search') || '';
     const search = searchParams.get('search') || ''; // Initialize search from URL
     dispatch(setFilters({ category, search }));
     dispatch(getPizzas({ category: category === 'All' ? '' : category, search }));
@@ -35,7 +31,6 @@ const Menu = () => {
     const newFilters = { ...filters, [key]: value };
     dispatch(setFilters(newFilters));
     
-    // Update URL params
     // Update URL params (only for category and search for now, others can be added)
     const params = new URLSearchParams();
     if (newFilters.category !== 'All') params.set('category', newFilters.category);
@@ -52,7 +47,6 @@ const Menu = () => {
       available: newFilters.available
     }));
   };
-  
 
   return (
     <div className="pt-24 pb-16 min-h-screen">
